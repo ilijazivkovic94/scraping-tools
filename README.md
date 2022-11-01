@@ -31,3 +31,8 @@ $ npm run dev
 
 The application will be listening for incoming connections on `http://localhost:7000`.
 
+### Test URL
+```
+http://localhost:7000/scrape?url=https://www.amazon.com/dp/B00AG44IYY/ref=cm_gf_acco_iaad_d_p0_e0_qd1_Is49XDly9AJua7hh4Q0r
+```
+
