@@ -23,5 +23,11 @@ Then run the `pm2 start npm --name "app name" -- start` script.
 $ pm2 start npm --name "GiftList" -- start
 ```
 
+### Development
+For development, you can use this command.
+``` bash
+$ npm run dev
+```
+
 The application will be listening for incoming connections on `http://localhost:7000`.
 
