@@ -8,7 +8,7 @@ app.get('/scrape', function(req, res) {
 		try {
 			// Launching the Puppeteer controlled headless browser and navigate to the Digimon website
 			puppeteer.launch({
-				headless: true,
+				headless: false,
 		        args: ["--disable-setuid-sandbox", "--start-maximized"],
 		        ignoreHTTPSErrors: true,
 		        defaultViewport: {
@@ -17,15 +17,17 @@ app.get('/scrape', function(req, res) {
 		      	}
 			}).then(async function(browser) {
 				try {
+					console.log('Opening URL: ', req.query.url);
 				    const page = await browser.newPage();
-				    await page.goto(req.query.url, {waitUntil: 'networkidle0'});
+				    await page.goto(req.query.url);
+					console.log('Opened URL successfully');
 				    const content = await page.content();
 				    const $ = cheerio.load(content);
 
 				    let product = {};
 				    product.url = req.query.url;
-				    product.name = $('title').text();
-				    product.description = $('meta[name="description"]').attr('content');
+				    product.name = $('title').text().trim();
+				    product.description = $('meta[name="description"]').attr('content').trim();
 			    	let images = await page.evaluate(() =>  {
 			    		let imagesTags = document.querySelectorAll('img');
 					  const divs = document.querySelectorAll('div[style]');
@@ -169,6 +171,7 @@ app.get('/scrape', function(req, res) {
 				    		product,
 				    	}]
 				    }
+					console.log('Scrapped Product: ', req.query.url);
 
 				    res.send(response);
 				} catch(err) {
