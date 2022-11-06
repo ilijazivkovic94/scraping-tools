@@ -8,7 +8,7 @@ app.get('/scrape', function(req, res) {
 		try {
 			// Launching the Puppeteer controlled headless browser and navigate to the Digimon website
 			puppeteer.launch({
-				headless: false,
+				headless: true,
 		        args: ["--disable-setuid-sandbox", "--start-maximized"],
 		        ignoreHTTPSErrors: true,
 		        defaultViewport: {
