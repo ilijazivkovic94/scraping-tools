@@ -3,6 +3,14 @@ const app = express(); // Initializing Express
 const puppeteer = require("puppeteer"); // Adding Puppeteer
 const cheerio = require("cheerio"); // Adding cheerio
 
+app.use(function(req, res, next){
+  res.setTimeout(120000, function() {
+    console.log('Request has timed out.');
+    res.send(408);
+  });
+  next();
+});
+
 app.get("/scrape", function (req, res) {
   if (req.query.url) {
     try {
@@ -21,7 +29,9 @@ app.get("/scrape", function (req, res) {
           try {
             console.log("Opening URL: ", req.query.url);
             const page = await browser.newPage();
-            await page.goto(req.query.url);
+            await page.goto(req.query.url, {
+              waitUntil: 'networkidle0',
+            });
             console.log("Opened URL successfully");
             const content = await page.content();
             const $ = cheerio.load(content);
@@ -29,9 +39,7 @@ app.get("/scrape", function (req, res) {
             let product = {};
             product.url = req.query.url;
             product.name = $("title").text().trim().replace(/\t/g, '').replace(/\s\s/g, '').split('–')[0];
-            product.description = $('meta[name="description"]')
-              .attr("content")
-              .trim();
+            product.description = $('meta[name="description"]').attr("content") || '';
             let images = await page.evaluate(() => {
               let imageTags = document.getElementsByTagName("img");
               let limitHeight = 100;
@@ -216,124 +224,125 @@ app.get("/scrape", function (req, res) {
             product.images = images;
 
             const price = await page.evaluate(() => {
-				let defaultFontSize = 13;
-				elements = [...document.querySelectorAll(" body *")];
-				if (window.location.href.indexOf('bedbathandbeyond.com') > -1) {
-				  elements = [...document.querySelector("#wmHostPdp").shadowRoot.querySelectorAll('*')];
-				}
-				if (window.location.href.indexOf('rh.com') > -1) {
-				  defaultFontSize = 11;
-				}
-				function createRecordFromElement(element) {
-				  const elementStyle = getComputedStyle(element);
-				  const text = element.textContent.trim();
-				  var record = {};
-				  const bBox = element.getBoundingClientRect();
-				  if (text.length <= 30 && !(bBox.x == 0 && bBox.y == 0)) {
-					record["fontSize"] = parseInt(getComputedStyle(element)["fontSize"]);
-				  }
-				  record["y"] = bBox.y;
-				  record["x"] = bBox.x;
-				  record["text"] = text;
-				  if(text.indexOf('Sale Price:') > -1 && text.length > 11) {
-					record["text"] = text.replace('Sale Price:', '');
-				  }
-				  if(text.indexOf('Sale :') > -1) {
-					record["text"] = text.replace('Sale :', '');
-				  }
-				  if(text.indexOf('Standard Price:') > -1) {
-					record["text"] = text.replace('Standard Price:', '');
-				  }
-				  if(text.indexOf('Price') > -1) {
-					record["text"] = text.replace('Price', '');
-				  }
-				  if(text.indexOf('Limited Time Offer') > -1) {
-					record["text"] = text.replace('Limited Time Offer', '');
-				  }
-				  if(text.indexOf('USD') > -1) {
-					record["text"] = text.replace('USD', '');
-				  }
-				  if(text.indexOf('CAD') > -1) {
-					record["text"] = text.replace('CAD', '');
-				  }
-				  if(text.indexOf('Now') > -1) {
-					record["text"] = text.replace('Now ', '');
-				  }
-				  if(text.indexOf(',') > -1) {
-					const textArys = text.split(',');
-					if ((parseInt(textArys[textArys.length - 1]) + "").length == 2) {
-					  record["text"] = text.replace(/,([^,]*)$/, ".$1");
-					}
-				  }
-				  if(text.includes('Sale \n\n') && text.length > 10) {
-					record["text"] = text.replace('Sale \n\n', '');
-				  }
-				  if(text.indexOf('off - ') > -1) {
-					record["text"] = text.split('off - ')[1];
-				  }
-				  if (elementStyle.textDecorationLine != 'none') {
-					record['textDecoration'] = true;
-				  } else {
-					record['textDecoration'] = false;
-				  }
-				  return record;
-				}
-				let records = elements.map(createRecordFromElement);
-				function canBePrice(record) {
-				  if(record["text"].indexOf('Sale :') > -1 && record["text"].length > 6) {
-					record["text"] = record["text"].replace('Sale :', '');
-				  }
-				  if(record["text"].indexOf(' Standard Price') > -1 && record["text"].length > 15) {
-					record["text"] = record["text"].replace(' Standard Price', '');
-				  }
-				  if(record["text"].indexOf('Standard ') > -1 && record["text"].length > 9) {
-					record["text"] = record["text"].replace('Standard ', '');
-				  }
-				  if(record["text"].indexOf('Chewy') > -1 && record["text"].length > 5) {
-					record["text"] = record["text"].replace('Chewy', '');
-				  }
-				  if(record["text"].indexOf('current price: ') > -1 && record["text"].length > 15) {
-					record["text"] = record["text"].replace('current price: ', '');
-				  }
-				  if(record["text"].indexOf(' USD') > -1 && record["text"].length > 4) {
-					record["text"] = record["text"].replace(' USD', '');
-				  }
-				  if(record["text"].indexOf('Sale \n\n') > -1) {
-					record["text"] = record["text"].replace('Sale \n\n', '');
-				  }
-				  record["text"] = record['text'].trim();
-			  
-				  if (
-					record["y"] > 1300 ||
-					record["fontSize"] == undefined ||
-					!record["text"].match(
-					  /(^(US ){0,1}(rs\.|Rs\.|RS\.|\$|€|£|₹|INR|RP|Rp|USD|US\$|CAD|C\$){0,1}(\s){0,1}[\d,]+(\.\d+){0,1}(\s){0,1}(AED){0,1}(€){0,1}(£){0,1}(Rp){0,1}$)/
-					) ||
-					record["textDecoration"]
-				  ) {
-					return false;
-				  } else {
-					let scRe = /[\$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6Rp]/;
-					if (record["y"] > 90 && record['fontSize'] >= defaultFontSize && (scRe.test(record['text']))) return true;
-				  }
-				}
-				let possiblePriceRecords = records.filter(canBePrice);
-				let priceRecordsSortedByFontSize = possiblePriceRecords.sort(function (a, b) {
-				  if (a["fontSize"] == b["fontSize"]) return a["y"] > b["y"];
-				  return a["fontSize"] < b["fontSize"];
-				});
-				if (window.location.href.indexOf('homedepot.com') > -1) {
-				  return '$' + (parseFloat(priceRecordsSortedByFontSize[3]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]) - parseFloat(priceRecordsSortedByFontSize[4]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]));
-				}
-				if (window.location.href.indexOf('victoriassecret.com') > -1 || window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('jcrew.com') > -1) {
-				  return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[1] ? priceRecordsSortedByFontSize[1]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
-				}
-				if (window.location.href.indexOf('sears.com') > -1 || window.location.href.indexOf('landsend.com') > -1 || window.location.href.indexOf('tommybahama.com') > -1) {
-				  return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[3] ? priceRecordsSortedByFontSize[3]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
-				}
-				return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '';
+              let defaultFontSize = 13;
+              elements = [...document.querySelectorAll(" body *")];
+              if (window.location.href.indexOf('bedbathandbeyond.com') > -1) {
+                elements = [...document.querySelector("#wmHostPdp").shadowRoot.querySelectorAll('*')];
+              }
+              if (window.location.href.indexOf('rh.com') > -1) {
+                defaultFontSize = 11;
+              }
+              function createRecordFromElement(element) {
+                const elementStyle = getComputedStyle(element);
+                const text = element.textContent.trim();
+                var record = {};
+                const bBox = element.getBoundingClientRect();
+                if (text.length <= 30 && !(bBox.x == 0 && bBox.y == 0)) {
+                record["fontSize"] = parseInt(getComputedStyle(element)["fontSize"]);
+                }
+                record["y"] = bBox.y;
+                record["x"] = bBox.x;
+                record["text"] = text;
+                if(text.indexOf('Sale Price:') > -1 && text.length > 11) {
+                record["text"] = text.replace('Sale Price:', '');
+                }
+                if(text.indexOf('Sale :') > -1) {
+                record["text"] = text.replace('Sale :', '');
+                }
+                if(text.indexOf('Standard Price:') > -1) {
+                record["text"] = text.replace('Standard Price:', '');
+                }
+                if(text.indexOf('Price') > -1) {
+                record["text"] = text.replace('Price', '');
+                }
+                if(text.indexOf('Limited Time Offer') > -1) {
+                record["text"] = text.replace('Limited Time Offer', '');
+                }
+                if(text.indexOf('USD') > -1) {
+                record["text"] = text.replace('USD', '');
+                }
+                if(text.indexOf('CAD') > -1) {
+                record["text"] = text.replace('CAD', '');
+                }
+                if(text.indexOf('Now') > -1) {
+                record["text"] = text.replace('Now ', '');
+                }
+                if(text.indexOf(',') > -1) {
+                const textArys = text.split(',');
+                if ((parseInt(textArys[textArys.length - 1]) + "").length == 2) {
+                  record["text"] = text.replace(/,([^,]*)$/, ".$1");
+                }
+                }
+                if(text.includes('Sale \n\n') && text.length > 10) {
+                record["text"] = text.replace('Sale \n\n', '');
+                }
+                if(text.indexOf('off - ') > -1) {
+                record["text"] = text.split('off - ')[1];
+                }
+                if (elementStyle.textDecorationLine != 'none') {
+                record['textDecoration'] = true;
+                } else {
+                record['textDecoration'] = false;
+                }
+                return record;
+              }
+              let records = elements.map(createRecordFromElement);
+              function canBePrice(record) {
+                if(record["text"].indexOf('Sale :') > -1 && record["text"].length > 6) {
+                record["text"] = record["text"].replace('Sale :', '');
+                }
+                if(record["text"].indexOf(' Standard Price') > -1 && record["text"].length > 15) {
+                record["text"] = record["text"].replace(' Standard Price', '');
+                }
+                if(record["text"].indexOf('Standard ') > -1 && record["text"].length > 9) {
+                record["text"] = record["text"].replace('Standard ', '');
+                }
+                if(record["text"].indexOf('Chewy') > -1 && record["text"].length > 5) {
+                record["text"] = record["text"].replace('Chewy', '');
+                }
+                if(record["text"].indexOf('current price: ') > -1 && record["text"].length > 15) {
+                record["text"] = record["text"].replace('current price: ', '');
+                }
+                if(record["text"].indexOf(' USD') > -1 && record["text"].length > 4) {
+                record["text"] = record["text"].replace(' USD', '');
+                }
+                if(record["text"].indexOf('Sale \n\n') > -1) {
+                record["text"] = record["text"].replace('Sale \n\n', '');
+                }
+                record["text"] = record['text'].trim();
+              
+                if (
+                record["y"] > 1300 ||
+                record["fontSize"] == undefined ||
+                !record["text"].match(
+                  /(^(US ){0,1}(rs\.|Rs\.|RS\.|\$|€|£|₹|INR|RP|Rp|USD|US\$|CAD|C\$){0,1}(\s){0,1}[\d,]+(\.\d+){0,1}(\s){0,1}(AED){0,1}(€){0,1}(£){0,1}(Rp){0,1}$)/
+                ) ||
+                record["textDecoration"]
+                ) {
+                return false;
+                } else {
+                let scRe = /[\$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6Rp]/;
+                if (record["y"] > 90 && record['fontSize'] >= defaultFontSize && (scRe.test(record['text']))) return true;
+                }
+              }
+              let possiblePriceRecords = records.filter(canBePrice);
+              let priceRecordsSortedByFontSize = possiblePriceRecords.sort(function (a, b) {
+                if (a["fontSize"] == b["fontSize"]) return a["y"] > b["y"];
+                return a["fontSize"] < b["fontSize"];
+              });
+              if (window.location.href.indexOf('homedepot.com') > -1) {
+                return '$' + (parseFloat(priceRecordsSortedByFontSize[3]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]) - parseFloat(priceRecordsSortedByFontSize[4]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]));
+              }
+              if (window.location.href.indexOf('victoriassecret.com') > -1 || window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('jcrew.com') > -1) {
+                return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[1] ? priceRecordsSortedByFontSize[1]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
+              }
+              if (window.location.href.indexOf('sears.com') > -1 || window.location.href.indexOf('landsend.com') > -1 || window.location.href.indexOf('tommybahama.com') > -1) {
+                return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[3] ? priceRecordsSortedByFontSize[3]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
+              }
+              return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '';
             });
 
+            console.log(price);
             product.offers = [
               {
                 price: price.match(/-?[\d\.]+/g)[0],
