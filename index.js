@@ -33,6 +33,7 @@ app.get("/scrape", function (req, res) {
               waitUntil: 'networkidle0',
             });
             console.log("Opened URL successfully");
+
             const content = await page.content();
             const $ = cheerio.load(content);
 
@@ -180,17 +181,16 @@ app.get("/scrape", function (req, res) {
               return { images: result, mainImage };
             });
             product.images = images;
-
             const price = await page.evaluate(() => {
               let defaultFontSize = 13;
               elements = [...document.querySelectorAll(" body *")];
-              if (window.location.href.indexOf('bedbathandbeyond.com') > -1) {
+              if (document.location.href.indexOf('bedbathandbeyond.com') > -1) {
                 elements = [...document.querySelector("#wmHostPdp").shadowRoot.querySelectorAll('*')];
               }
-              if (window.location.href.indexOf('homedepot.com') > -1) {
-                elements = [...document.querySelector("div[name='zone-a']").querySelectorAll('*')];
+              if (document.location.href.indexOf('homedepot.com') > -1) {
+                elements = [...document.querySelectorAll('body *')];
               }
-              if (window.location.href.indexOf('rh.com') > -1) {
+              if (document.location.href.indexOf('rh.com') > -1) {
                 defaultFontSize = 11;
               }
               function createRecordFromElement(element) {
@@ -291,13 +291,13 @@ app.get("/scrape", function (req, res) {
                 if (a["fontSize"] == b["fontSize"]) return a["y"] > b["y"];
                 return a["fontSize"] < b["fontSize"];
               });
-              if (window.location.href.indexOf('homedepot.com') > -1) {
-                return '$' + (parseFloat(priceRecordsSortedByFontSize[3]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]) - parseFloat(priceRecordsSortedByFontSize[4]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]));
+              if (document.location.href.indexOf('homedepot.com') > -1) {
+                return '$' + (parseFloat(priceRecordsSortedByFontSize[priceRecordsSortedByFontSize.length - 4]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]) - parseFloat(priceRecordsSortedByFontSize[priceRecordsSortedByFontSize.length - 3]['text'].match(/-?(?:\d+(?:\.\d*)?|\.\d+)/)[0]));
               }
-              if (window.location.href.indexOf('victoriassecret.com') > -1 || window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('jcrew.com') > -1) {
+              if (document.location.href.indexOf('victoriassecret.com') > -1 || document.location.href.indexOf('bedbathandbeyond.com') > -1 || document.location.href.indexOf('jcrew.com') > -1) {
                 return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[1] ? priceRecordsSortedByFontSize[1]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
               }
-              if (window.location.href.indexOf('sears.com') > -1 || window.location.href.indexOf('landsend.com') > -1 || window.location.href.indexOf('tommybahama.com') > -1) {
+              if (document.location.href.indexOf('sears.com') > -1 || document.location.href.indexOf('landsend.com') > -1 || document.location.href.indexOf('tommybahama.com') > -1) {
                 return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[3] ? priceRecordsSortedByFontSize[3]['text'] : (priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '');
               }
               return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '';
