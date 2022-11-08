@@ -23,6 +23,11 @@ Then run the `pm2 start npm --name "app name" -- start` script.
 $ pm2 start npm --name "GiftList" -- start
 ```
 
+After pulling changes from the repo, You must restart the current service.
+``` bash
+$ pm2 restart GiftList
+```
+
 ### Development
 For development, you can use this command.
 ``` bash
