@@ -13,7 +13,11 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "express": "^4.18.2",
-    "puppeteer": "^19.2.0"
+    "puppeteer": "^19.2.2",
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-adblocker": "^2.13.5",
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "zyte-smartproxy-plugin": "^1.0.8"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

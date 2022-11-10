@@ -1,15 +1,19 @@
 const express = require("express"); // Adding Express
 const app = express(); // Initializing Express
-const puppeteer = require("puppeteer"); // Adding Puppeteer
-const cheerio = require("cheerio"); // Adding cheerio
+const puppeteer = require("puppeteer-extra"); // Adding Puppeteer
+const cheerio = require("cheerio"); // Adding cheerio//require executablePath from puppeteer
+const { executablePath } = require('puppeteer')
 
-app.use(function(req, res, next){
-  res.setTimeout(120000, function() {
-    console.log('Request has timed out.');
-    res.send(408);
-  });
-  next();
-});
+// add zyte-smartproxy-plugin
+const SmartProxyPlugin = require('zyte-smartproxy-plugin');
+puppeteer.use(SmartProxyPlugin({
+  spm_apikey: '93be10091e0947c4914505bc9a147c2c',
+  static_bypass: false, //  enable to save bandwidth (but may break some websites)
+}));
+
+// add stealth plugin and use defaults (all evasion techniques)
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
 
 app.get("/scrape", function (req, res) {
   if (req.query.url) {
@@ -18,8 +22,9 @@ app.get("/scrape", function (req, res) {
       puppeteer
         .launch({
           headless: true,
-          args: ["--disable-setuid-sandbox", "--start-maximized"],
+          executablePath: executablePath(),
           ignoreHTTPSErrors: true,
+          args: ["--disable-setuid-sandbox", "--start-maximized"],
           defaultViewport: {
             width: 1920,
             height: 1080,
@@ -31,6 +36,7 @@ app.get("/scrape", function (req, res) {
             const page = await browser.newPage();
             await page.goto(req.query.url, {
               waitUntil: 'networkidle0',
+              timeout: 180000,
             });
             console.log("Opened URL successfully");
 
@@ -339,6 +345,7 @@ app.get("/scrape", function (req, res) {
           }
         })
         .catch((err) => {
+          console.log(err);
           res.status(500).send({
             message: err,
             status: 500,
