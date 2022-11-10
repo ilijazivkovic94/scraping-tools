@@ -66,6 +66,10 @@ app.get("/scrape", function (req, res) {
               if (window.location.href.indexOf('suitsupply.com') > -1) {
                 imageTags = document.querySelectorAll(".pdp-images img");
               }
+              if (window.location.href.indexOf('somethingnavy.com') > -1) {
+                images = document.querySelectorAll(".block-images source[type='image/jpg']");
+                useSrcset = true;
+              }
               if (window.location.href.indexOf('therealreal.com') > -1) {
                 imageTags = document.querySelectorAll(".pdp-desktop-images img");
                 httpOnly = true;
@@ -101,7 +105,7 @@ app.get("/scrape", function (req, res) {
                 removeQuery = true;
               }
               
-              if (window.location.href.indexOf('bedbathandbeyond.com') > -1) {
+              if (window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('buybuybaby.com') > -1) {
                 const shadowInside = document.querySelector("#wmHostPdp").shadowRoot;
                 imageTags = shadowInside.querySelectorAll('img');
               }
@@ -190,11 +194,14 @@ app.get("/scrape", function (req, res) {
             const price = await page.evaluate(() => {
               let defaultFontSize = 13;
               elements = [...document.querySelectorAll(" body *")];
-              if (document.location.href.indexOf('bedbathandbeyond.com') > -1) {
+              if (document.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('buybuybaby.com') > -1) {
                 elements = [...document.querySelector("#wmHostPdp").shadowRoot.querySelectorAll('*')];
               }
               if (document.location.href.indexOf('homedepot.com') > -1) {
                 elements = [...document.querySelectorAll('body *')];
+              }
+              if (window.location.href.indexOf('somethingnavy.com') > -1) {
+                elements = [...document.querySelector("#wm_content").querySelectorAll('*')];
               }
               if (document.location.href.indexOf('rh.com') > -1) {
                 defaultFontSize = 11;
@@ -236,7 +243,7 @@ app.get("/scrape", function (req, res) {
                 }
                 if(text.indexOf(',') > -1) {
                   const textArys = text.split(',');
-                  if ((parseInt(textArys[textArys.length - 1]) + "").length == 2) {
+                  if (textArys.length > 2 && (parseInt(textArys[textArys.length - 1]) + "").length == 2) {
                     record["text"] = text.replace(/,([^,]*)$/, ".$1");
                   }
                 }
@@ -309,7 +316,6 @@ app.get("/scrape", function (req, res) {
               return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '';
             });
 
-            console.log(price);
             product.offers = [
               {
                 price: price.match(/-?[\d\.]+/g)[0],
