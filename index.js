@@ -270,7 +270,7 @@ app.get("/scrape", async function (req, res) {
         for (let i = 0; i < images.length; i++) {
           const imageElement = images[i];
           const bBox = imageElement.getBoundingClientRect();
-          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('/flags/') === -1 && imageElement.src) {
+          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('flag') === -1 && imageElement.src.indexOf('transparent') === -1 && imageElement.src.indexOf('chrome-extension') === -1 && imageElement.src.indexOf('giftlist.com') === -1 && imageElement.src) {
             if (httpOnly) {
               if (imageElement.src.indexOf('http') > -1 && imageElement.src.indexOf('http') != 0) {
                 continue;
@@ -447,7 +447,9 @@ app.get("/scrape", async function (req, res) {
           record["text"] = record["text"].replace(/\n        /g, '');
           record["text"] = record["text"].replace("Discounted price", '');
           record["text"] = record["text"].replace("Sale ", '');
-          record["text"] = record["text"].replace(/\s/g, '');
+          if (record["text"].indexOf('$ ') > -1) {
+            record["text"] = record["text"].replace(/\s/g, '');
+          }
           if (elementStyle.textDecorationLine != 'none') {
             record['textDecoration'] = true;
           } else {
