@@ -341,7 +341,7 @@ app.get("/scrape", async function (req, res) {
         if (window.location.href.indexOf('piccalio.com') > -1) {
           defaultMainIndex = 1;
         }
-        
+      
         if (window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('buybuybaby.com') > -1) {
           const shadowInside = document.querySelector("#wmHostPdp").shadowRoot;
           images = shadowInside.querySelectorAll('img');
@@ -364,7 +364,7 @@ app.get("/scrape", async function (req, res) {
       
         let result = [];
         let mainImage = null;
-        
+      
         if (divs && divs.length) {
           for (let i = 0; i < divs.length; i++) {
             const divStyle = getComputedStyle(divs[i]);
@@ -380,7 +380,7 @@ app.get("/scrape", async function (req, res) {
               if (url && url.indexOf('http') > -1 && url.indexOf('Loading') === -1) {
                 if (divBox.height > 300 && divBox.width > 300 && divs[i].style.display != 'none' && divBox.y < 2500) {
                   result.push(url);
-            
+      
                   if (divBox.height > 300 && divBox.width > 300 && !mainImage && divBox.y < 600) {
                     mainImage = url;
                   }
@@ -421,7 +421,7 @@ app.get("/scrape", async function (req, res) {
             }
           }
         }
-        
+      
         if (!result.length || useSrcset) {
           for (let i = 0; i < images.length; i++) {
             const imageElement = images[i];
@@ -452,7 +452,7 @@ app.get("/scrape", async function (req, res) {
         if (defaultMainIndex > -1) {
           mainImage = result[defaultMainIndex];
         }
-        
+      
         return { images: result, mainImage };
       });
       product.images = imageTags;
@@ -461,7 +461,7 @@ app.get("/scrape", async function (req, res) {
         let defaultHeight = 90;
         let checkFontSize = true;
         let limitHeight = 1300;
-        
+      
         if (window.location.href.indexOf('shoppersdrugmart.') > -1) {
           document.querySelector('h2[aria-label="Price Details"] span').remove();
         }
@@ -520,70 +520,70 @@ app.get("/scrape", async function (req, res) {
           record["y"] = bBox.y;
           record["x"] = bBox.x;
           record["text"] = text.trim().replace(/\n        /g, '');
-          if(record["text"].indexOf('Sale Price:') > -1 && record["text"].length > 11) {
+          if (record["text"].indexOf('Sale Price:') > -1 && record["text"].length > 11) {
             record["text"] = record["text"].replace('Sale Price:', '');
           }
-          if(record["text"].indexOf('Sale :') > -1) {
+          if (record["text"].indexOf('Sale :') > -1) {
             record["text"] = record["text"].replace('Sale :', '');
           }
-          if(record["text"].indexOf('Standard Price:') > -1) {
+          if (record["text"].indexOf('Standard Price:') > -1) {
             record["text"] = record["text"].replace('Standard Price:', '');
           }
-          if(record["text"].indexOf('Price') > -1) {
+          if (record["text"].indexOf('Price') > -1) {
             record["text"] = record["text"].replace('Price', '');
           }
-          if(record["text"].indexOf('Limited Time Offer') > -1) {
+          if (record["text"].indexOf('Limited Time Offer') > -1) {
             record["text"] = record["text"].replace('Limited Time Offer', '');
           }
-          if(record["text"].indexOf('USD ') > -1) {
+          if (record["text"].indexOf('USD ') > -1) {
             record["text"] = record["text"].replace('USD ', '');
           }
-          if(record["text"].indexOf('CAD ') > -1) {
+          if (record["text"].indexOf('CAD ') > -1) {
             if (record["text"].indexOf('$') > -1) {
               record["text"] = record["text"].replace('CAD ', '');
             } else {
               record["text"] = record["text"].replace('CAD ', '$');
             }
           }
-          if(record["text"].indexOf('Now') > -1) {
+          if (record["text"].indexOf('Now') > -1) {
             record["text"] = record["text"].replace('Now ', '');
           }
-          if(record["text"].indexOf('Save') > -1) {
+          if (record["text"].indexOf('Save') > -1) {
             record["text"] = record["text"].replace('Save ', '');
           }
-          if(record["text"].indexOf('CA$') > -1) {
+          if (record["text"].indexOf('CA$') > -1) {
             record["text"] = record["text"].replace('CA', '');
           }
-          if(record["text"].indexOf('CAD$') > -1) {
+          if (record["text"].indexOf('CAD$') > -1) {
             record["text"] = record["text"].replace('CAD$', '$');
           }
-          if(record["text"].indexOf('AU$') > -1) {
+          if (record["text"].indexOf('AU$') > -1) {
             record["text"] = record["text"].replace('AU$', '$');
           }
-          if(record["text"].indexOf('MRP : ') > -1) {
+          if (record["text"].indexOf('MRP : ') > -1) {
             record["text"] = record["text"].replace('MRP : ', '');
           }
-          if(record["text"].includes('Sale \n\n') && record["text"].length > 10) {
+          if (record["text"].includes('Sale \n\n') && record["text"].length > 10) {
             record["text"] = record["text"].replace('Sale \n\n', '');
           }
-          if(record["text"].indexOf('off - ') > -1) {
+          if (record["text"].indexOf('off - ') > -1) {
             record["text"] = record["text"].split('off - ')[1];
           }
-          if(record["text"].indexOf('-') > -1) {
+          if (record["text"].indexOf('-') > -1) {
             record["text"] = record["text"].split('-')[0].trim();
           }
-          if(record["text"].indexOf('Add to your cart — ') > -1) {
+          if (record["text"].indexOf('Add to your cart — ') > -1) {
             record["text"] = record["text"].replace('Add to your cart — ', '');
           }
-          if(record["text"].indexOf('FREE delivery') > -1) {
+          if (record["text"].indexOf('FREE delivery') > -1) {
             record["text"] = record["text"].replace('FREE delivery', '');
           }
-          if(window.location.href.indexOf('harborfreight.com') > -1 || window.location.href.indexOf('academy.com') > -1 || window.location.href.indexOf('charmit.com') > -1) {
+          if (window.location.href.indexOf('harborfreight.com') > -1 || window.location.href.indexOf('academy.com') > -1 || window.location.href.indexOf('charmit.com') > -1) {
             var len = record["text"].length;
-            var x = record["text"].substring(0, len-2) + "." + record["text"].substring(len-2);
+            var x = record["text"].substring(0, len - 2) + "." + record["text"].substring(len - 2);
             record["text"] = x;
           }
-          if(window.location.href.indexOf('mercadolibre.com') > -1 && record["text"].indexOf('pesos') > -1) {
+          if (window.location.href.indexOf('mercadolibre.com') > -1 && record["text"].indexOf('pesos') > -1) {
             record["text"] = record["text"].split('pesos')[1];
           }
           record["text"] = record["text"].replace("Now        ", '');
@@ -605,10 +605,10 @@ app.get("/scrape", async function (req, res) {
           if (scRe.test(record["text"]) && record["text"].indexOf('USD') > -1) {
             record["text"] = record["text"].replace('USD', '');
           }
-          if(record["text"].indexOf(' CAD') > -1) {
+          if (record["text"].indexOf(' CAD') > -1) {
             record["text"] = record["text"].replace(' CAD', '');
           }
-          if(record["text"].indexOf(',') > -1) {
+          if (record["text"].indexOf(',') > -1) {
             const textArys = record["text"].split(',');
             if (textArys.length >= 2 && (parseInt(textArys[textArys.length - 1]) + "").length == 2) {
               record["text"] = record["text"].replace(/,([^,]*)$/, ".$1");
@@ -626,46 +626,46 @@ app.get("/scrape", async function (req, res) {
         function canBePrice(record) {
           if (!record) {
             return false;
-          } 
+          }
           if (!record['text']) {
             return false;
           }
-          if(record["text"].indexOf('Sale :') > -1 && record["text"].length > 6) {
+          if (record["text"].indexOf('Sale :') > -1 && record["text"].length > 6) {
             record["text"] = record["text"].replace('Sale :', '');
           }
-          if(record["text"].indexOf(' Standard Price') > -1 && record["text"].length > 15) {
+          if (record["text"].indexOf(' Standard Price') > -1 && record["text"].length > 15) {
             record["text"] = record["text"].replace(' Standard Price', '');
           }
-          if(record["text"].indexOf('Standard ') > -1 && record["text"].length > 9) {
+          if (record["text"].indexOf('Standard ') > -1 && record["text"].length > 9) {
             record["text"] = record["text"].replace('Standard ', '');
           }
-          if(record["text"].indexOf('Chewy') > -1 && record["text"].length > 5) {
+          if (record["text"].indexOf('Chewy') > -1 && record["text"].length > 5) {
             record["text"] = record["text"].replace('Chewy', '');
           }
-          if(record["text"].indexOf('current price: ') > -1 && record["text"].length > 15) {
+          if (record["text"].indexOf('current price: ') > -1 && record["text"].length > 15) {
             record["text"] = record["text"].replace('current price: ', '');
           }
-          if(record["text"].indexOf(' USD') > -1 && record["text"].length > 4) {
+          if (record["text"].indexOf(' USD') > -1 && record["text"].length > 4) {
             if (record["text"].indexOf('$') > -1) {
               record["text"] = record["text"].replace(' USD', '');
             } else {
               record["text"] = '$' + record["text"].replace(' USD', '');
             }
           }
-          if(record["text"].indexOf(' CAD') > -1 && record["text"].length > 4) {
+          if (record["text"].indexOf(' CAD') > -1 && record["text"].length > 4) {
             if (record["text"].indexOf('$') > -1) {
               record["text"] = record["text"].replace(' CAD', '');
             } else {
               record["text"] = '$' + record["text"].replace(' CAD', '');
             }
           }
-          if(record["text"].indexOf('Sale \n\n') > -1) {
+          if (record["text"].indexOf('Sale \n\n') > -1) {
             record["text"] = record["text"].replace('Sale \n\n', '');
           }
-          if(record["text"].indexOf('-') > -1 && record["text"].indexOf('$') > -1) {
+          if (record["text"].indexOf('-') > -1 && record["text"].indexOf('$') > -1) {
             record["text"] = record["text"].split('-')[1].trim();
           }
-          if(record["text"].indexOf('Now') > -1) {
+          if (record["text"].indexOf('Now') > -1) {
             record["text"] = record["text"].replace('Now', '');
           }
           record["text"] = record['text'].trim();
