@@ -380,7 +380,7 @@ app.get("/scrape", async function (req, res) {
                 imageUrl = divStyle.backgroundImage;
                 url = imageUrl.slice(4, -1).replace(/"/g, "");
               }
-              if (url && url.indexOf('http') > -1 && url.indexOf('Loading') < 0 && url.indexOf('LOADING') < 0 && url.indexOf('background') < 0) {
+              if (url && url.indexOf('http') > -1 && url.indexOf('Loading') < 0 && url.indexOf('LOADING') < 0 && url.indexOf('background') < 0 && url.indexOf('prime_logo') < 0) {
                 if (divBox.height > 300 && divBox.width > 300 && divs[i].style.display != 'none' && divBox.y < 2500) {
                   result.push(url);
 
@@ -396,7 +396,7 @@ app.get("/scrape", async function (req, res) {
         for (let i = 0; i < images.length; i++) {
           const imageElement = images[i];
           const bBox = imageElement.getBoundingClientRect();
-          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('flag') === -1 && imageElement.src.indexOf('transparent') === -1 && imageElement.src.indexOf('chrome-extension') === -1 && imageElement.src.indexOf('giftlist.com') === -1 && imageElement.src.indexOf('Loading') < 0 && imageElement.src.indexOf('LOADING') < 0 && imageElement.src.indexOf('background') < 0 && imageElement.src) {
+          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('flag') === -1 && imageElement.src.indexOf('transparent') === -1 && imageElement.src.indexOf('chrome-extension') === -1 && imageElement.src.indexOf('giftlist.com') === -1 && imageElement.src.indexOf('Loading') < 0 && imageElement.src.indexOf('LOADING') < 0 && imageElement.src.indexOf('background') < 0 && imageElement.src.indexOf('prime_logo') < 0 && imageElement.src) {
             if (httpOnly) {
               if (imageElement.src.indexOf('http') > -1 && imageElement.src.indexOf('http') != 0) {
                 continue;
@@ -715,7 +715,6 @@ app.get("/scrape", async function (req, res) {
         }
         return priceRecordsSortedByFontSize && priceRecordsSortedByFontSize[0] ? priceRecordsSortedByFontSize[0]['text'] : '';
       });
-      console.log(price);
 
       product.offers = [
         {
@@ -723,6 +722,7 @@ app.get("/scrape", async function (req, res) {
           currency: price && price.match(/-?[\d\.]+/g) ? price.replace(/[0-9]/g, "").replace(/\./g, "").replace(/,/g, '') : '$',
           availability: "InStock",
           regularPrice: price && price.match(/-?[\d\.]+/g) ? price.match(/[+\-]?\d+(,\d+)?(\.\d+)?/)[0] : 0,
+          offer: "Product",
         },
       ];
 
