@@ -17,27 +17,27 @@ puppeteer.use(StealthPlugin());
 
 const browserInstance = async () => {
   let browser;
-	try {
-	    console.log("Opening the browser......");
-	    browser = await puppeteer.launch({
-        headless: true,
-        executablePath: executablePath(),
-        ignoreHTTPSErrors: true,
-        args: ["--disable-setuid-sandbox", "--start-maximized"],
-        defaultViewport: {
-          width: 1920,
-          height: 1080,
-        },
-	    });
-	} catch (err) {
-	    console.log("Could not create a browser instance => : ", err);
-	}
-	return browser;
+  try {
+    console.log("Opening the browser......");
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath: executablePath(),
+      ignoreHTTPSErrors: true,
+      args: ["--disable-setuid-sandbox", "--start-maximized"],
+      defaultViewport: {
+        width: 1920,
+        height: 1080,
+      },
+    });
+  } catch (err) {
+    console.log("Could not create a browser instance => : ", err);
+  }
+  return browser;
 }
 
-app.use(function(req, res, next){
-  req.setTimeout(500000, function(){
-      console.log('Timeout Error');
+app.use(function (req, res, next) {
+  req.setTimeout(500000, function () {
+    console.log('Timeout Error');
   });
   next();
 });
@@ -62,6 +62,9 @@ app.get("/scrape", async function (req, res) {
       product.name = $("title").text().trim().replace(/\t/g, '').replace(/\s\s/g, '').split('–')[0].split(' - ')[0].replace('/"/g', '\\"').split('|')[0];
       if (req.query.url.indexOf('coachoutlet.com') > -1) {
         product.name = $("title").text().trim().split('|')[1];
+      }
+      if (req.query.url.indexOf('amazon.') > -1) {
+        product.name = $("title").text().trim().split('|').length > 1 ? $("title").text().trim().split('|')[1] : $("title").text().trim().split('|')[0];
       }
       product.description = $('meta[name="description"]').attr("content") || '';
       let imageTags = await page.evaluate(() => {
@@ -309,7 +312,7 @@ app.get("/scrape", async function (req, res) {
           removeQuery = true;
           httpOnly = true;
         }
-      
+
         if (window.location.href.indexOf('shop.lululemon.com') > -1) {
           images = document.querySelectorAll(".pdp-carousel-images-offset img");
           limitHeight = 70;
@@ -317,18 +320,18 @@ app.get("/scrape", async function (req, res) {
           removeQuery = true;
           httpOnly = true;
         }
-      
+
         if (window.location.href.indexOf('staples.com') > -1) {
           images = document.querySelectorAll("#image_gallery_container img");
           limitHeight = 70;
           limitWidth = 70;
           removeQuery = true;
         }
-      
+
         if (window.location.href.indexOf('gathre.com') > -1) {
           images = document.querySelectorAll(".main-images img");
         }
-      
+
         if (window.location.href.indexOf('walmart.com') > -1) {
           defaultMainIndex = 6;
         }
@@ -341,12 +344,12 @@ app.get("/scrape", async function (req, res) {
         if (window.location.href.indexOf('piccalio.com') > -1) {
           defaultMainIndex = 1;
         }
-      
+
         if (window.location.href.indexOf('bedbathandbeyond.com') > -1 || window.location.href.indexOf('buybuybaby.com') > -1) {
           const shadowInside = document.querySelector("#wmHostPdp").shadowRoot;
           images = shadowInside.querySelectorAll('img');
         }
-      
+
         let divs = document.querySelectorAll('div[style]');
         if (window.location.href.indexOf('etsy.com') > -1) {
           divs = document.querySelectorAll('div[class="wt-grid__item-xs-12"] div[style]');
@@ -361,10 +364,10 @@ app.get("/scrape", async function (req, res) {
         if (window.location.href.indexOf('fatbraintoys.com') > -1) {
           divs = [];
         }
-      
+
         let result = [];
         let mainImage = null;
-      
+
         if (divs && divs.length) {
           for (let i = 0; i < divs.length; i++) {
             const divStyle = getComputedStyle(divs[i]);
@@ -372,15 +375,15 @@ app.get("/scrape", async function (req, res) {
               let imageUrl = divs[i].style.backgroundImage;
               let url = imageUrl.slice(4, -1).replace(/"/g, "");
               const divBox = divs[i].getBoundingClientRect();
-      
+
               if (divStyle && !imageUrl) {
                 imageUrl = divStyle.backgroundImage;
                 url = imageUrl.slice(4, -1).replace(/"/g, "");
               }
-              if (url && url.indexOf('http') > -1 && url.indexOf('Loading') === -1) {
+              if (url && url.indexOf('http') > -1 && url.indexOf('Loading') < 0 && url.indexOf('LOADING') < 0 && url.indexOf('background') < 0) {
                 if (divBox.height > 300 && divBox.width > 300 && divs[i].style.display != 'none' && divBox.y < 2500) {
                   result.push(url);
-      
+
                   if (divBox.height > 300 && divBox.width > 300 && !mainImage && divBox.y < 600) {
                     mainImage = url;
                   }
@@ -393,7 +396,7 @@ app.get("/scrape", async function (req, res) {
         for (let i = 0; i < images.length; i++) {
           const imageElement = images[i];
           const bBox = imageElement.getBoundingClientRect();
-          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('flag') === -1 && imageElement.src.indexOf('transparent') === -1 && imageElement.src.indexOf('chrome-extension') === -1 && imageElement.src.indexOf('giftlist.com') === -1 && imageElement.src.indexOf('Loading') === -1 && imageElement.src) {
+          if (!useSrcset && imageElement.naturalHeight >= limitHeight && imageElement.naturalWidth >= limitWidth && imageElement.style.display != 'none' && bBox.y < 2000 && imageElement.src.indexOf('flag') === -1 && imageElement.src.indexOf('transparent') === -1 && imageElement.src.indexOf('chrome-extension') === -1 && imageElement.src.indexOf('giftlist.com') === -1 && imageElement.src.indexOf('Loading') < 0 && imageElement.src.indexOf('LOADING') < 0 && imageElement.src.indexOf('background') < 0 && imageElement.src) {
             if (httpOnly) {
               if (imageElement.src.indexOf('http') > -1 && imageElement.src.indexOf('http') != 0) {
                 continue;
@@ -408,7 +411,7 @@ app.get("/scrape", async function (req, res) {
             } else {
               result.push(imageElement.src);
             }
-      
+
             if (imageElement.naturalHeight > 400 && bBox.y < 600 && bBox.y > 80 && !mainImage && imageElement.src.indexOf('null') < 0) {
               if (mainIndex === mainImageIndex) {
                 if (removeQuery) {
@@ -421,7 +424,7 @@ app.get("/scrape", async function (req, res) {
             }
           }
         }
-      
+
         if (!result.length || useSrcset) {
           for (let i = 0; i < images.length; i++) {
             const imageElement = images[i];
@@ -444,15 +447,15 @@ app.get("/scrape", async function (req, res) {
             }
           }
         }
-      
+
         if (result.length && !mainImage) {
           mainImage = result[mainImageIndex || 0];
         }
-      
+
         if (defaultMainIndex > -1) {
           mainImage = result[defaultMainIndex];
         }
-      
+
         return { images: result, mainImage };
       });
       product.images = imageTags;
@@ -461,7 +464,7 @@ app.get("/scrape", async function (req, res) {
         let defaultHeight = 90;
         let checkFontSize = true;
         let limitHeight = 1300;
-      
+
         if (window.location.href.indexOf('shoppersdrugmart.') > -1) {
           document.querySelector('h2[aria-label="Price Details"] span').remove();
         }
@@ -669,7 +672,7 @@ app.get("/scrape", async function (req, res) {
             record["text"] = record["text"].replace('Now', '');
           }
           record["text"] = record['text'].trim();
-      
+
           if (
             record["y"] > limitHeight ||
             record["fontSize"] == undefined ||
