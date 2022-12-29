@@ -5,11 +5,11 @@ const cheerio = require("cheerio"); // Adding cheerio//require executablePath fr
 const { executablePath } = require('puppeteer')
 
 // add zyte-smartproxy-plugin
-// const SmartProxyPlugin = require('zyte-smartproxy-plugin');
-// puppeteer.use(SmartProxyPlugin({
-//   spm_apikey: '93be10091e0947c4914505bc9a147c2c',
-//   static_bypass: false, //  enable to save bandwidth (but may break some websites)
-// }));
+const SmartProxyPlugin = require('zyte-smartproxy-plugin');
+puppeteer.use(SmartProxyPlugin({
+  spm_apikey: '93be10091e0947c4914505bc9a147c2c',
+  static_bypass: false, //  enable to save bandwidth (but may break some websites)
+}));
 
 // add stealth plugin and use defaults (all evasion techniques)
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
