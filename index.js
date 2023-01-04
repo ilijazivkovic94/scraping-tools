@@ -5,11 +5,11 @@ const cheerio = require("cheerio"); // Adding cheerio//require executablePath fr
 const { executablePath } = require('puppeteer')
 
 // add zyte-smartproxy-plugin
-const SmartProxyPlugin = require('zyte-smartproxy-plugin');
-puppeteer.use(SmartProxyPlugin({
-  spm_apikey: '93be10091e0947c4914505bc9a147c2c',
-  static_bypass: false, //  enable to save bandwidth (but may break some websites)
-}));
+// const SmartProxyPlugin = require('zyte-smartproxy-plugin');
+// puppeteer.use(SmartProxyPlugin({
+//   spm_apikey: '93be10091e0947c4914505bc9a147c2c',
+//   static_bypass: false, //  enable to save bandwidth (but may break some websites)
+// }));
 
 // add stealth plugin and use defaults (all evasion techniques)
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
@@ -20,7 +20,7 @@ const browserInstance = async () => {
   try {
     console.log("Opening the browser......");
     browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       executablePath: executablePath(),
       ignoreHTTPSErrors: true,
       args: ["--disable-setuid-sandbox", "--start-maximized"],
@@ -740,10 +740,9 @@ app.get("/scrape", async function (req, res) {
             product,
           },
         ],
+        content,
       };
       console.log("Scrapped Product: ", req.query.url);
-      await page.close();
-      await browser.close();
       res.send(response);
     } catch (err) {
       console.log(err);
