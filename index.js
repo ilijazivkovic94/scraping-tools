@@ -742,9 +742,13 @@ async function scrapeProduct(url) {
       ],
     };
     console.log("Scrapped Product: ", url);
+    await page.screenshot({
+        path: 'screenshot_full.jpg',
+        fullPage: true 
+    });
     await page.close();
     await browser.close();
-    fs.writeFileSync('/var/www/scraping-tools/1.txt', content);
+    fs.writeFileSync('/var/www/scraping-tools/1.html', content);
     return response;
   } catch (err) {
     console.log(err);
