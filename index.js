@@ -20,7 +20,7 @@ const browserInstance = async () => {
   try {
     console.log("Opening the browser......");
     browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       executablePath: executablePath(),
       ignoreHTTPSErrors: true,
       args: ["--disable-setuid-sandbox", "--start-maximized"],
