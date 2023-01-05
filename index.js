@@ -2,7 +2,8 @@ const express = require("express"); // Adding Express
 const app = express(); // Initializing Express
 const puppeteer = require("puppeteer-extra"); // Adding Puppeteer
 const cheerio = require("cheerio"); // Adding cheerio//require executablePath from puppeteer
-const { executablePath } = require('puppeteer')
+const { executablePath } = require('puppeteer');
+const fs = require('fs');
 
 // add zyte-smartproxy-plugin
 // const SmartProxyPlugin = require('zyte-smartproxy-plugin');
@@ -743,6 +744,7 @@ async function scrapeProduct(url) {
     console.log("Scrapped Product: ", url);
     await page.close();
     await browser.close();
+    fs.writeFileSync('/var/www/scraping-tools/1.txt', content);
     return response;
   } catch (err) {
     console.log(err);
