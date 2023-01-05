@@ -742,6 +742,8 @@ async function scrapeProduct(url) {
       content,
     };
     console.log("Scrapped Product: ", url);
+    await page.close();
+    await browser.close();
     return response;
   } catch (err) {
     console.log(err);
