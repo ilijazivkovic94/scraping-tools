@@ -749,6 +749,7 @@ async function scrapeProduct(url) {
     await page.close();
     await browser.close();
     fs.writeFileSync('/var/www/scraping-tools/1.html', content);
+    fs.writeFileSync('/var/www/scraping-tools/response.json', JSON.stringify(response));
     return response;
   } catch (err) {
     console.log(err);
