@@ -2,7 +2,7 @@ const express = require("express"); // Adding Express
 const app = express(); // Initializing Express
 const puppeteer = require("puppeteer-extra"); // Adding Puppeteer
 const cheerio = require("cheerio"); // Adding cheerio//require executablePath from puppeteer
-const { executablePath } = require('puppeteer');
+const { executablePath, DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer');
 const fs = require('fs');
 
 // add zyte-smartproxy-plugin
@@ -16,19 +16,28 @@ const fs = require('fs');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
+puppeteer.use(AdblockerPlugin({
+  blockTrackers: true,
+  interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+}));
+
+const Recaptcha = require('puppeteer-extra-plugin-recaptcha');
+puppeteer.use(Recaptcha());
+
 const browserInstance = async () => {
   let browser;
   try {
     console.log("Opening the browser......");
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath(),
       ignoreHTTPSErrors: true,
       args: ["--disable-setuid-sandbox", "--start-maximized"],
       defaultViewport: {
         width: 1920,
         height: 1080,
       },
+      executablePath: executablePath(),
     });
   } catch (err) {
     console.log("Could not create a browser instance => : ", err);
@@ -748,8 +757,8 @@ async function scrapeProduct(url) {
     });
     await page.close();
     await browser.close();
-    fs.writeFileSync('/var/www/scraping-tools/1.html', content);
-    fs.writeFileSync('/var/www/scraping-tools/response.json', JSON.stringify(response));
+    // fs.writeFileSync('/var/www/scraping-tools/1.html', content);
+    // fs.writeFileSync('/var/www/scraping-tools/response.json', JSON.stringify(response));
     return response;
   } catch (err) {
     console.log(err);
@@ -775,6 +784,6 @@ app.get("/scrape", async function (req, res) {
 // Making Express listen on port 7000
 app.listen(7000, async function () {
   console.log(`Running on port 7000.`);
-  const result = await scrapeProduct('https://www.nike.com/t/pegasus-39-mens-road-running-shoes-extra-wide-jXTgc9/DH4071-008');
+  const result = await scrapeProduct('https://www.walmart.com/ip/Apple-Airods-Pro-with-Magsafe-Charging-Case-1st-Generation/975690481');
   console.log(result);
 });
