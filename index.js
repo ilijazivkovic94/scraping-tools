@@ -30,7 +30,7 @@ const browserInstance = async () => {
   try {
     console.log("Opening the browser......");
     browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       ignoreHTTPSErrors: true,
       args: ["--disable-setuid-sandbox", "--start-maximized"],
       defaultViewport: {
@@ -57,6 +57,7 @@ async function scrapeProduct(url) {
     const browser = await browserInstance();
     console.log("Opening URL: ", url.trim());
     const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
     await page.goto(url.trim(), {
       waitUntil: 'networkidle0',
       timeout: 480000,
@@ -150,6 +151,11 @@ async function scrapeProduct(url) {
       }
       if (window.location.href.indexOf('thehalara.com') > -1) {
         images = document.querySelectorAll('.swiper-wrapper img');
+      }
+      if (window.location.href.indexOf('fahertybrand.com') > -1) {
+        images = document.querySelectorAll('#swiper-wrapper img');
+        useSrcset = true;
+        mainImageIndex = 5;
       }
       if (window.location.href.indexOf('kiwico.com') > -1) {
         images = document.querySelectorAll('.product-image-thumbnail img');
@@ -342,7 +348,7 @@ async function scrapeProduct(url) {
       }
 
       if (window.location.href.indexOf('walmart.com') > -1) {
-        defaultMainIndex = 6;
+        defaultMainIndex = 2;
       }
       if (window.location.href.indexOf('mewaii.com') > -1) {
         defaultMainIndex = 3;
@@ -465,6 +471,10 @@ async function scrapeProduct(url) {
         mainImage = result[defaultMainIndex];
       }
 
+      if (!mainImage) {
+        mainImage = result[0];
+      }
+
       return { images: result, mainImage };
     });
     product.images = imageTags;
@@ -500,7 +510,7 @@ async function scrapeProduct(url) {
         elements = [...document.querySelectorAll('div[class="wt-grid__item-xs-12"]')[0].querySelectorAll('*')];
         checkFontSize = false;
       }
-      if (window.location.href.indexOf('rh.com') > -1) {
+      if (window.location.href.indexOf('rh.com') > -1 || window.location.href.indexOf('zara.com') > -1) {
         defaultFontSize = 11;
       }
       if (window.location.href.indexOf('michaelkors.') > -1) {
@@ -610,12 +620,16 @@ async function scrapeProduct(url) {
         if (record["text"].indexOf('$ ') > -1) {
           record["text"] = record["text"].replace(/\s/g, '');
         }
-        let scRe = /[\$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6RpCAD]/;
+        let scRe = /[\$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6RpCADUSD]/;
         if (scRe.test(record["text"]) && record["text"].indexOf(" ") > -1 && window.location.href.indexOf('loopearplugs.com') > -1) {
           record["text"] = record["text"].split(" ")[0];
         }
         if (scRe.test(record["text"]) && record["text"].indexOf('USD') > -1) {
-          record["text"] = record["text"].replace('USD', '');
+          if (record['text'].indexOf('$') > -1) {
+            record["text"] = record["text"].replace('USD', '');
+          } else {
+            record["text"] = '$' + record["text"].replace('USD', '');
+          }
         }
         if (record["text"].indexOf(' CAD') > -1) {
           record["text"] = record["text"].replace(' CAD', '');
@@ -758,7 +772,7 @@ async function scrapeProduct(url) {
     await page.close();
     await browser.close();
     // fs.writeFileSync('/var/www/scraping-tools/1.html', content);
-    // fs.writeFileSync('/var/www/scraping-tools/response.json', JSON.stringify(response));
+    fs.writeFileSync('/var/www/scraping-tools/response.json', JSON.stringify(response));
     return response;
   } catch (err) {
     console.log(err);
@@ -784,6 +798,6 @@ app.get("/scrape", async function (req, res) {
 // Making Express listen on port 7000
 app.listen(7000, async function () {
   console.log(`Running on port 7000.`);
-  const result = await scrapeProduct('https://www.walmart.com/ip/Apple-Airods-Pro-with-Magsafe-Charging-Case-1st-Generation/975690481');
+  const result = await scrapeProduct('https://www.nordstrom.com/s/hydro-flask-40-ounce-wide-mouth-cap-water-bottle/4534339?origin=category-personalizedsort&breadcrumb=Home%2FHome%2FShop%20by%20Style%2FHealthy%20Living&color=105');
   console.log(result);
 });
