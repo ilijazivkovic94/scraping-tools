@@ -57,10 +57,10 @@ app.use(function (req, res, next) {
 let cluster = null;
 
 (async () => {
-  const browser = await browserInstance();
 
   async function scrapeProduct(url) {
     try {
+      const browser = await browserInstance();
       console.log("Opening URL: ", url.trim());
       const page = await browser.newPage();
       await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
