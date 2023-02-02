@@ -47,8 +47,6 @@ const browserInstance = async () => {
   return browser;
 }
 
-app.use(cors());
-
 app.use(function (req, res, next) {
   req.setTimeout(500000, function () {
     console.log('Timeout Error');
@@ -775,6 +773,7 @@ let cluster = null;
       };
       console.log("Scrapped Product: ", url);
       await page.close();
+      await browser.close();
       // fs.writeFileSync('/var/www/scraping-tools/1.html', content);
       return response;
     } catch (err) {
