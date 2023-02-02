@@ -1,4 +1,5 @@
 const express = require("express"); // Adding Express
+var cors = require('cors')
 const app = express(); // Initializing Express
 const puppeteer = require("puppeteer-extra"); // Adding Puppeteer
 const cheerio = require("cheerio"); // Adding cheerio//require executablePath from puppeteer
@@ -45,6 +46,8 @@ const browserInstance = async () => {
   }
   return browser;
 }
+
+app.use(cors());
 
 app.use(function (req, res, next) {
   req.setTimeout(500000, function () {
