@@ -55,7 +55,7 @@ app.use(function (req, res, next) {
 });
 
 let cluster = null;
-
+app.use(cors());
 
 (async () => {
 
